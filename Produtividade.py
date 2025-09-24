@@ -15,20 +15,18 @@ st.write("Selecione o mês, ano e obra para calcular RUP automaticamente.")
 # -------------------- SIDEBAR --------------------
 st.sidebar.header("Filtros")
 
-# Seleção de mês e ano
-meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
-anos = [2025, 2024]  # Ajuste conforme necessidade
+meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+anos = [2025, 2024]
 
 mes_selecionado = st.sidebar.selectbox("Mês", meses)
 ano_selecionado = st.sidebar.selectbox("Ano", anos)
 
-# Seleção da obra
-obras = ["Marie Curie"]  # Pode expandir futuramente
+obras = ["Marie Curie"]
 obra_selecionada = st.sidebar.selectbox("Obra", obras)
 
 # -------------------- NOMES DOS ARQUIVOS --------------------
 arquivo_apropriacao = os.path.join(
-    "Apropriacao",
+    "Apropriação",
     f"{ano_selecionado}.{meses.index(mes_selecionado)+1:02d} - Apropriação - {obra_selecionada} - {mes_selecionado[:3]}.{str(ano_selecionado)[2:]} PREENCHIDO.xlsx"
 )
 
@@ -46,7 +44,7 @@ st.write(f"Produção Executada: {arquivo_producao}")
 
 # -------------------- LEITURA DAS PLANILHAS --------------------
 try:
-    df_apropriacao = pd.read_excel(arquivo_apropriacao, header=9)  # Cabeçalho na linha 10
+    df_apropriacao = pd.read_excel(arquivo_apropriacao, header=9)
     st.success("Planilha de Apropriação carregada com sucesso!")
 except Exception as e:
     st.error(f"Erro ao carregar Apropriação: {e}")
@@ -67,26 +65,18 @@ except Exception as e:
     st.stop()
 
 # -------------------- FILTRAGEM DE SERVIÇO --------------------
-# Usuário digita o serviço que deseja filtrar
 servico_selecionado = st.text_input("Digite o serviço a filtrar (ex: Concreto)")
 
 if servico_selecionado:
-    # Filtra serviço na Apropriação (coluna L)
     df_servico = df_apropriacao[df_apropriacao['L'] == servico_selecionado]
+    df_servico = df_servico[['C','D']].rename(columns={'C':'Nome','D':'Funcao'})
     
-    # Pegar nomes e funções
-    df_servico = df_servico[['C', 'D']]  # Coluna C: Nome, D: Função
-    df_servico = df_servico.rename(columns={'C': 'Nome', 'D': 'Funcao'})
-    
-    # -------------------- JUNTAR COM FOLHA --------------------
-    col_folha = ["Hora Extra 70% - Sábado", "Hora Extra 70% - Semana", "Produção", "Reflexos Produção", "Repouso Remunerado"]
+    col_folha = ["Hora Extra 70% - Sábado","Hora Extra 70% - Semana","Produção","Reflexos Produção","Repouso Remunerado"]
     df_folha_filtrado = df_folha[df_folha['NOME DA EMPRESA'].isin(df_servico['Nome'])]
     df_folha_filtrado = df_folha_filtrado[['NOME DA EMPRESA'] + col_folha]
     
-    # Merge Apropriação x Folha
     df_merge = pd.merge(df_servico, df_folha_filtrado, left_on='Nome', right_on='NOME DA EMPRESA', how='left')
     
-    # -------------------- CÁLCULO DE HORAS --------------------
     def tipo_funcao(func):
         return 'Profissional' if not func.startswith('Servente') else 'Ajudante'
     
@@ -99,7 +89,6 @@ if servico_selecionado:
                                df_merge["Reflexos Produção"] +
                                df_merge["Repouso Remunerado"]) / df_merge['ValorHora']
     
-    # -------------------- CALCULO RUP --------------------
     mes_ref = f"{ano_selecionado}-{meses.index(mes_selecionado)+1:02d}"
     df_prod_mes = df_producao[df_producao['Mês Referência'] == mes_ref]
     df_prod_servico = df_prod_mes[df_prod_mes['Serviço'] == servico_selecionado]

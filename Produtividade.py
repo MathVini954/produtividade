@@ -26,8 +26,8 @@ obra_selecionada = st.sidebar.selectbox("Obra", obras)
 
 # -------------------- NOMES DOS ARQUIVOS --------------------
 arquivo_apropriacao = os.path.join(
-    "Apropriação",
-    f"{ano_selecionado}.{meses.index(mes_selecionado)+1:02d} - Apropriação - {obra_selecionada} - {mes_selecionado[:3]}.{str(ano_selecionado)[2:]} PREENCHIDO.xlsx"
+    "Apropriacao",
+    f"{ano_selecionado}.{meses.index(mes_selecionado)+1:02d} - Apropriacao - {obra_selecionada} - {mes_selecionado[:3]}.{str(ano_selecionado)[2:]} PREENCHIDO.xlsx"
 )
 
 arquivo_folha = os.path.join(
@@ -38,16 +38,16 @@ arquivo_folha = os.path.join(
 arquivo_producao = "PRODUCAO_EXECUTADA.xlsx"
 
 st.write("### Arquivos carregados")
-st.write(f"Apropriação: {arquivo_apropriacao}")
+st.write(f"Apropriacao: {arquivo_apropriacao}")
 st.write(f"Folha: {arquivo_folha}")
-st.write(f"Produção Executada: {arquivo_producao}")
+st.write(f"Producao Executada: {arquivo_producao}")
 
 # -------------------- LEITURA DAS PLANILHAS --------------------
 try:
     df_apropriacao = pd.read_excel(arquivo_apropriacao, header=9)
-    st.success("Planilha de Apropriação carregada com sucesso!")
+    st.success("Planilha de Apropriacao carregada com sucesso!")
 except Exception as e:
-    st.error(f"Erro ao carregar Apropriação: {e}")
+    st.error(f"Erro ao carregar Apropriacao: {e}")
     st.stop()
 
 try:
@@ -59,12 +59,12 @@ except Exception as e:
 
 try:
     df_producao = pd.read_excel(arquivo_producao)
-    st.success("Planilha de Produção Executada carregada com sucesso!")
+    st.success("Planilha de Producao Executada carregada com sucesso!")
 except Exception as e:
-    st.error(f"Erro ao carregar Produção Executada: {e}")
+    st.error(f"Erro ao carregar Producao Executada: {e}")
     st.stop()
 
-# -------------------- FILTRAGEM DE SERVIÇO --------------------
+# -------------------- FILTRAGEM DE SERVICO --------------------
 servico_selecionado = st.text_input("Digite o serviço a filtrar (ex: Concreto)")
 
 if servico_selecionado:
@@ -101,9 +101,9 @@ if servico_selecionado:
         total_ajudante = df_merge[df_merge['Tipo']=='Ajudante']['RUP'].sum()
         RUP_final = total_profissional + (total_ajudante / 1.33)
         
-        st.write("### Tabela de Funcionários com Horas e RUP")
+        st.write("### Tabela de Funcionarios com Horas e RUP")
         st.dataframe(df_merge[['Nome','Funcao','Tipo','HorasTotais','RUP']])
         
         st.success(f"RUP Final do Serviço '{servico_selecionado}': {RUP_final:.2f}")
     else:
-        st.warning("Serviço não encontrado na planilha de Produção Executada.")
+        st.warning("Serviço nao encontrado na planilha de Producao Executada.")

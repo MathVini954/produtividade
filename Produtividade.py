@@ -71,7 +71,8 @@ except Exception as e:
 servico_selecionado = st.text_input("Digite o serviço a filtrar (ex: Concreto)")
 
 if servico_selecionado:
-    df_servico = df_apropriacao[df_apropriacao['L'] == servico_selecionado]  # L10 no Excel vira coluna 'L'
+    # Filtra serviço na Apropriação (coluna L)
+    df_servico = df_apropriacao[df_apropriacao['L'] == servico_selecionado]
     
     # Pegar nomes e funções
     df_servico = df_servico[['C', 'D']]  # Coluna C: Nome, D: Função
@@ -86,16 +87,12 @@ if servico_selecionado:
     df_merge = pd.merge(df_servico, df_folha_filtrado, left_on='Nome', right_on='NOME DA EMPRESA', how='left')
     
     # -------------------- CÁLCULO DE HORAS --------------------
-    # Definir tipo
     def tipo_funcao(func):
         return 'Profissional' if not func.startswith('Servente') else 'Ajudante'
     
     df_merge['Tipo'] = df_merge['Funcao'].apply(tipo_funcao)
-    
-    # Valor da hora
     df_merge['ValorHora'] = df_merge['Tipo'].apply(lambda x: 10.5 if x=='Profissional' else 7.9)
     
-    # Soma das horas da folha
     df_merge['HorasTotais'] = (df_merge["Hora Extra 70% - Sábado"] +
                                df_merge["Hora Extra 70% - Semana"] +
                                df_merge["Produção"] +
@@ -103,15 +100,14 @@ if servico_selecionado:
                                df_merge["Repouso Remunerado"]) / df_merge['ValorHora']
     
     # -------------------- CALCULO RUP --------------------
-    # Juntar quantidade executada
-    df_prod_mes = df_producao[df_producao['Mês Referência'] == f"{ano_selecionado}-{meses.index(mes_selecionado)+1:02d}"]
+    mes_ref = f"{ano_selecionado}-{meses.index(mes_selecionado)+1:02d}"
+    df_prod_mes = df_producao[df_producao['Mês Referência'] == mes_ref]
     df_prod_servico = df_prod_mes[df_prod_mes['Serviço'] == servico_selecionado]
     
     if not df_prod_servico.empty:
         qtd_executada = df_prod_servico.iloc[0]['Quantidade Executada']
         df_merge['RUP'] = df_merge['HorasTotais'] / qtd_executada
         
-        # Soma Profissionais e Ajudantes
         total_profissional = df_merge[df_merge['Tipo']=='Profissional']['RUP'].sum()
         total_ajudante = df_merge[df_merge['Tipo']=='Ajudante']['RUP'].sum()
         RUP_final = total_profissional + (total_ajudante / 1.33)

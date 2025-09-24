@@ -1,0 +1,10 @@
+streamlit
+streamlit-option-menu
+streamlit-lottie
+plotly
+pandas
+requests
+openpyxl
+statsmodels
+gspread 
+oauth2client
